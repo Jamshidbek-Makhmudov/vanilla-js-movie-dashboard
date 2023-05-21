@@ -104,8 +104,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	// Modal
 	const modalTrigger = document.querySelectorAll('[data-modal]'),
-		modal = document.querySelector('.modal'),
-		modalCloseBtn = document.querySelector('[data-close]');
+		modal = document.querySelector('.modal');
+	//	modalCloseBtn = document.querySelector('[data-close]');
 
 	function closeModal() {
 		modal.classList.add('hide');
@@ -124,10 +124,10 @@ window.addEventListener('DOMContentLoaded', () => {
 		item.addEventListener('click', openModal);
 	});
 
-	modalCloseBtn.addEventListener('click', closeModal);
+	//modalCloseBtn.addEventListener('click', closeModal);
 
 	modal.addEventListener('click', e => {
-		if (e.target == modal) {
+		if (e.target == modal || e.target.getAttribute('data-close') == '') {
 			closeModal();
 		}
 	});
@@ -138,7 +138,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
-	// const modalTimerId = setTimeout(openModal, 5000)
+	const modalTimerId = setTimeout(openModal, 50000);
 
 	function showModalByScroll() {
 		if (
@@ -162,14 +162,14 @@ window.addEventListener('DOMContentLoaded', () => {
 			this.price = price;
 			this.classes = classes;
 			this.parent = document.querySelector(parentSelector);
-			this.transfer = 11000;
+			this.transfer = 110000;
 			this.chageToUZS();
 		}
-
+		//conver dollar to sum
 		chageToUZS() {
 			this.price = this.price * this.transfer;
 		}
-
+		//add new  html file, div, class
 		render() {
 			const element = document.createElement('div');
 
@@ -194,7 +194,7 @@ window.addEventListener('DOMContentLoaded', () => {
 			this.parent.append(element);
 		}
 	}
-
+	//data
 	new MenuCard(
 		'img/tabs/1.png',
 		'usual',
@@ -223,4 +223,89 @@ window.addEventListener('DOMContentLoaded', () => {
 		'.menu .container',
 		'menu__item'
 	).render();
+
+	// server backend bilan ishlash ajax bilan ishlash formData lar bilan ishlash
+	const forms = document.querySelectorAll('form');
+
+	//pasdagi postData functionni forEach yordamida htmldagi ikala formga berib qoyamiz
+	forms.forEach(form => {
+		postData(form);
+	});
+
+	//toast- message to user
+	const msg = {
+		loading: 'loading...',
+		success: 'thanks for submiting our form',
+		failure: 'Something went wrong',
+	};
+
+	function postData(form) {
+		form.addEventListener('submit', e => {
+			e.preventDefault();
+
+			// userga malumot yuborilganligini korsatish uchun:
+
+			const statusMessage = document.createElement('div'); //htmlda div ochamiz
+			statusMessage.textContent = msg.loading; //bu divni textiga loading messagni tenglaymiz
+			form.append(statusMessage); // shu tenglikni form ichidagi htmlga dinmaic holda qohsamiz
+			form.insertAdjacentElement('afterend', statusMessage);
+			const request = new XMLHttpRequest();
+			//	request.setRequestHeader('Content-Type', 'multipart/form-data'); //bizda xozir json file yoqligi uchun multipart/form-data shunaqa yozish kerak lekin bu xato biz qachon json bilan ishlasak shunda qoyish forData esa ozi bizga qoyib beradi
+			request.open('POST', 'server.php'); //backend
+			//
+			request.setRequestHeader('Content-Type', 'aplication/json');
+			const obj = {};
+
+			const formData = new FormData(form); //bu form ni ichidagi input va boshqa taglarni hamma elelemntlarini constructorda(object holda olib beradi)
+			formData.forEach((val, key) => {
+				obj[key] = val;
+			});
+			const json = JSON.stringify(obj);
+
+			request.send(json);
+
+			//const formData = new FormData(form); //bu form ni ichidagi input va boshqa taglarni hamma elelemntlarini constructorda(object holda olib beradi)
+			//request.send(formData); bu form data bilan ishlaganda kerak shunda yuqoridagi bazi kodlar kerak emas sammi.acdan korib tekshirib ol
+
+			request.addEventListener('load', () => {
+				if (request.status === 200) {
+					console.log(request.response);
+					showThanksModal(msg.success);
+
+					form.reset();
+					setTimeout(() => {
+						statusMessage.remove();
+					}, 2000);
+				} else {
+					showThanksModal(msg.failure);
+				}
+			});
+		});
+	}
+
+	//submit button bosilgandan keyin yangi modal ochib raxmat yuborish
+	function showThanksModal(message) {
+		const prevModalDialog = document.querySelector('.modal__dialog');
+		prevModalDialog.classList.add('hide');
+		openModal();
+		const thanksModal = document.createElement('div');
+		thanksModal.classList.add('modal__dialog');
+		thanksModal.innerHTML = `
+		<div class="modal__content">
+		<div data-close class="modal__close">&times;</div>
+		<div class="modal__title">
+${message}
+		</div>
+
+	</div>
+		`;
+
+		document.querySelector('.modal').append(thanksModal);
+		setTimeout(() => {
+			thanksModal.remove();
+			prevModalDialog.classList.add('show');
+			prevModalDialog.classList.remove('hide');
+			closeModal();
+		}, 4000);
+	}
 });
