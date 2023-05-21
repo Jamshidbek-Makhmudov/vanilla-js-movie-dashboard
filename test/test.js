@@ -27,6 +27,9 @@ const clone = JSON.parse(JSON.stringify(obj)); //obj ni deep(ichida nested objec
 
 //API- aplication programing inerface
 
+//javascript array methods: forEach yangi array qaytarmaydi;
+//map,filter yangi array qaytaradi
+
 //practice- change the currency:
 const uzs = document.querySelector('#uzs');
 usd = document.querySelector('#usd');
