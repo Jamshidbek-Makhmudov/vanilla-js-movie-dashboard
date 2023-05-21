@@ -56,7 +56,7 @@ uzs.addEventListener('input', e => {
 	//.      1=> DONE=> send() the operation is complete
 
 	//yuqoridagilar  xml request yuborish edi
-	//fetch apoi bn ishlash
+	//fetch apoi bn ishlash//
 	fetch('https://jsonplaceholder.typicode.com/posts', {
 		method: 'POST',
 		headers: {
