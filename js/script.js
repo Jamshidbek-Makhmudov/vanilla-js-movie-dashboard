@@ -249,23 +249,30 @@ window.addEventListener('DOMContentLoaded', () => {
 			form.append(statusMessage);
 			form.insertAdjacentElement('afterend', statusMessage); //loadingni ochirish
 			const formData = new FormData(form); //contsructor obj qaytarish uchun
+			const obj = {};
+			formData.forEach((val, key) => {
+				obj[key] = val;
+			});
 
 			//fetch request
 			fetch('server.php', {
 				method: 'POST',
-				body: formData,
-				//formData bilan ishlaganda header kerak emas!
+				headers: {
+					'Content-Type': 'aplication/json',
+				},
+				body: JSON.stringify(obj),
 			})
 				.then(data => data.text())
 				.then(data => {
 					console.log(data);
 					showThanksModal(msg.success);
-					form.reset();
+
 					statusMessage.remove();
 				})
 				.catch(() => {
 					showThanksModal(msg.failure);
-				});
+				})
+				.finally(() => form.reset());
 		});
 	}
 
