@@ -224,10 +224,10 @@ window.addEventListener('DOMContentLoaded', () => {
 		'menu__item'
 	).render();
 
-	// server backend bilan ishlash ajax bilan ishlash formData lar bilan ishlash
+	// serverga sorov yuborish fetch bilan
 	const forms = document.querySelectorAll('form');
 
-	//pasdagi postData functionni forEach yordamida htmldagi ikala formga berib qoyamiz
+	//forEach qilib iteratsiya qilish
 	forms.forEach(form => {
 		postData(form);
 	});
@@ -243,43 +243,29 @@ window.addEventListener('DOMContentLoaded', () => {
 		form.addEventListener('submit', e => {
 			e.preventDefault();
 
-			// userga malumot yuborilganligini korsatish uchun:
+			// userga message korsatish
+			const statusMessage = document.createElement('div');
+			statusMessage.textContent = msg.loading;
+			form.append(statusMessage);
+			form.insertAdjacentElement('afterend', statusMessage); //loadingni ochirish
+			const formData = new FormData(form); //contsructor obj qaytarish uchun
 
-			const statusMessage = document.createElement('div'); //htmlda div ochamiz
-			statusMessage.textContent = msg.loading; //bu divni textiga loading messagni tenglaymiz
-			form.append(statusMessage); // shu tenglikni form ichidagi htmlga dinmaic holda qohsamiz
-			form.insertAdjacentElement('afterend', statusMessage);
-			const request = new XMLHttpRequest();
-			//	request.setRequestHeader('Content-Type', 'multipart/form-data'); //bizda xozir json file yoqligi uchun multipart/form-data shunaqa yozish kerak lekin bu xato biz qachon json bilan ishlasak shunda qoyish forData esa ozi bizga qoyib beradi
-			request.open('POST', 'server.php'); //backend
-			//
-			request.setRequestHeader('Content-Type', 'aplication/json');
-			const obj = {};
-
-			const formData = new FormData(form); //bu form ni ichidagi input va boshqa taglarni hamma elelemntlarini constructorda(object holda olib beradi)
-			formData.forEach((val, key) => {
-				obj[key] = val;
-			});
-			const json = JSON.stringify(obj);
-
-			request.send(json);
-
-			//const formData = new FormData(form); //bu form ni ichidagi input va boshqa taglarni hamma elelemntlarini constructorda(object holda olib beradi)
-			//request.send(formData); bu form data bilan ishlaganda kerak shunda yuqoridagi bazi kodlar kerak emas sammi.acdan korib tekshirib ol
-
-			request.addEventListener('load', () => {
-				if (request.status === 200) {
-					console.log(request.response);
+			//fetch request
+			fetch('server.php', {
+				method: 'POST',
+				body: formData,
+				//formData bilan ishlaganda header kerak emas!
+			})
+				.then(data => data.text())
+				.then(data => {
+					console.log(data);
 					showThanksModal(msg.success);
-
 					form.reset();
-					setTimeout(() => {
-						statusMessage.remove();
-					}, 2000);
-				} else {
+					statusMessage.remove();
+				})
+				.catch(() => {
 					showThanksModal(msg.failure);
-				}
-			});
+				});
 		});
 	}
 
